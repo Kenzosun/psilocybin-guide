@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子純度檢測儀 - 操作協議 v2.8 (Stable)</title>
+    <!-- 1. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. React Core -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <!-- 3. React DOM -->
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 4. Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @keyframes scanline {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 0.3; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+        
+        .crt-overlay::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 50;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(0deg, transparent, rgba(32, 255, 238, 0.2), transparent);
+            position: absolute;
+            z-index: 49;
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+        }
+        .psychedelic-bg {
+            background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #050510 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .cyber-border {
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.15);
+            background: rgba(5, 5, 20, 0.9);
+            backdrop-filter: blur(20px);
+        }
+        .cyber-border::before, .cyber-border::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid;
+            pointer-events: none;
+        }
+        .cyber-border::before { top: -3px; left: -3px; border-color: var(--neon-color) transparent transparent var(--neon-color); }
+        .cyber-border::after { bottom: -3px; right: -3px; border-color: transparent var(--neon-color) var(--neon-color) transparent; }
+        
+        .glitch-text:hover {
+            animation: glitch 0.2s cubic-bezier(.25, .46, .45, .94) both infinite;
+            text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- SVG Icons Component ---
+        const Icon = ({ name, className, style, strokeWidth = 2 }) => {
+            const icons = {
+                Scale: (
+                    <React.Fragment>
+                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+                        <circle cx="7" cy="12" r="3"/>
+                        <path d="M7 2v2"/><path d="M7 15v2"/><path d="M19 12v2"/><path d="M19 2v2"/><path d="M19 15v2"/><path d="M2 12h2"/><path d="M12 12h2"/>
+                        <circle cx="19" cy="12" r="3"/>
+                    </React.Fragment>
+                ),
+                FlaskConical: (
+                    <React.Fragment>
+                        <path d="M10 2v8L4.36 19.38C3.33 21.05 4.54 23 6.48 23h11.04c1.94 0 3.15-1.95 2.12-3.62L14 10V2"/>
+                        <path d="M8.5 2h7"/><path d="M7 16h10"/>
+                    </React.Fragment>
+                ),
+                Syringe: (
+                    <React.Fragment>
+                        <path d="m18 2 4 4"/><path d="m17 7 3-3"/>
+                        <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/>
+                        <path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>
+                    </React.Fragment>
+                ),
+                Timer: (
+                    <React.Fragment>
+                        <line x1="10" x2="14" y1="2" y2="2"/>
+                        <line x1="12" x2="15" y1="14" y2="11"/>
+                        <circle cx="12" cy="14" r="8"/>
+                    </React.Fragment>
+                ),
+                BarChart4: (
+                    <React.Fragment>
+                        <path d="M3 3v18h18"/><path d="M13 17V9"/><path d="M18 17V5"/><path d="M8 17v-3"/>
+                    </React.Fragment>
+                ),
+                ChevronRight: <path d="m9 18 6-6-6-6"/>,
+                ChevronLeft: <path d="m15 18-6-6 6-6"/>,
+                Zap: <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>,
+                Thermometer: <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>,
+                CheckCircle2: (
+                    <React.Fragment>
+                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </React.Fragment>
+                ),
+                Trash2: (
+                    <React.Fragment>
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                        <line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+                    </React.Fragment>
+                ),
+                ShieldAlert: (
+                    <React.Fragment>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                        <line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
+                    </React.Fragment>
+                ),
+                Package: (
+                    <React.Fragment>
+                        <path d="M16.5 9.4 7.5 4.21"/>
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/>
+                    </React.Fragment>
+                )
+            };
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+                    {icons[name]}
+                </svg>
+            );
+        };
+
+        const PROTOCOL_STEPS = [
+            {
+                id: "PHASE_01",
+                title: "質量標定 (Sample Prep)",
+                desc: "精確秤取乾燥真菌樣本。為確保化學反應的光譜精確度，請將樣本研磨至均勻粉末狀態。",
+                tasks: ["將秤量舟放在托盤上並歸零 (Tare)", "緩慢灑入材料直至 150 毫克 (0.150g)", "研磨樣本至均勻粉末狀態"],
+                tip: "TIP! 將秤量舟歸零後緩慢加入材料。過程中切勿觸摸或拿起秤量舟，以免影響精度。緩慢、連續的添加過程能確保毫克秤讀數穩定。",
+                icon: "Scale",
+                neonColor: "#00ffff",
+                twColor: "text-cyan-400",
+                bgGlow: "shadow-[0_0_40px_rgba(0,255,255,0.2)]",
+                bgImage: "radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 50%)",
+                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin-mushrooms-on-scale-300x300.jpg", alt: "秤重樣本" }]
+            },
+            {
+                id: "PHASE_02",
+                title: "萃取序列 (Extraction)",
+                desc: "將樣本置入緩衝液中並打破細胞壁，啟動生物鹼的完全釋放協議。",
+                tasks: ["將樣本粉末置入萃取管", "劇烈震盪 10 秒以打破細胞壁", "靜置 10 分鐘進行化學釋放"],
+                icon: "FlaskConical",
+                neonColor: "#ff00ff",
+                twColor: "text-fuchsia-500",
+                bgGlow: "shadow-[0_0_40px_rgba(255,0,255,0.2)]",
+                bgImage: "radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%)",
+                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/weigh-boat-pour-300x300.jpg", alt: "倒入試管" }]
+            },
+            {
+                id: "PHASE_03",
+                title: "過濾與液體抽取 (Extraction)",
+                desc: "利用針筒與棉球過濾器，從萃取管中抽取純淨反應液。這是確保樣本無明顯顆粒雜質的關鍵過濾過程。",
+                tasks: ["將鈍針頭旋緊安裝至針筒頂部", "將棉球過濾器投入萃取管中", "針頭斜面緊壓棉球底部", "使用中等壓力抽吸直至全滿", "完成後將萃取管重新封口"],
+                tip: "TIP! 壓力是成功的關鍵：若抽不出液體代表壓得太緊；若流速過快可能有顆粒混入。抽吸時出現小氣泡是正常的。",
+                icon: "Syringe",
+                neonColor: "#39ff14",
+                twColor: "text-green-400",
+                bgGlow: "shadow-[0_0_40px_rgba(57,255,20,0.2)]",
+                bgImage: "radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1) 0%, transparent 60%)",
+                images: [
+                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/extraction-process-2-300x300.jpg", alt: "抽取液體" },
+                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/cotton-pellet-example-300x296.jpg", alt: "棉球定位" }
+                ]
+            },
+            {
+                id: "PHASE_03_A",
+                title: "針筒精確校準 (Syringe Prep)",
+                desc: "必須排除所有空氣並確保針筒內精確保留 1.0 毫升的反應液。",
+                tasks: ["針尖向上輕彈排除底部氣泡", "緩緩推送活塞直至排除頂部空氣", "對齊 1.0 ml 線", "將精確的 1.0 ml 注入玻璃測試載具"],
+                tip: "TIP! 若不小心推過頭或液體不足，請重新從棉球過濾器吸取少量液體並重複校準步驟。",
+                icon: "Syringe",
+                neonColor: "#00d4ff",
+                twColor: "text-blue-400",
+                bgGlow: "shadow-[0_0_40px_rgba(0,212,255,0.2)]",
+                bgImage: "radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.15) 0%, transparent 50%)",
+                images: [
+                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/tap-tap-280x300.jpg", alt: "排氣泡" },
+                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/push-the-air-out-219x300.jpg", alt: "排空氣" },
+                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/align-plunger-300x220.jpg", alt: "對齊刻度" },
+                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin-reaction-vial-300x300.jpg", alt: "注入載具" }
+                ]
+            },
+            {
+                id: "PHASE_03_B",
+                title: "熱能孵育協議 (Thermal Incubation)",
+                desc: "利用高溫環境催化顯色反應。溫度的準確性直接影響最終結果。",
+                tasks: ["將水煮至沸騰後移開火源", "將載具置入熱水中（水深需達一半）", "蓋上鍋蓋啟動定時器 15 分鐘", "確保溫度接近 200°F 進行孵育"],
+                tip: "TIP! 確保水在移開火源前完全沸騰。孵育時務必蓋上鍋蓋。僅微熱的水溫是不夠的。",
+                icon: "Thermometer",
+                neonColor: "#ff4d00",
+                twColor: "text-orange-500",
+                bgGlow: "shadow-[0_0_40px_rgba(255,77,0,0.2)]",
+                bgImage: "radial-gradient(circle at 50% 10%, rgba(255, 77, 0, 0.15) 0%, transparent 50%)",
+                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/hot-bath-300x300.jpg", alt: "熱水浴" }]
+            },
+            {
+                id: "PHASE_04",
+                title: "顯色觀察 (Color Wait)",
+                desc: "完成熱能孵育後將載具取出。系統需要最終的冷卻顯色穩定時間。",
+                tasks: ["取出載具並置於室溫環境", "觀察液體色彩隨冷卻演化", "等待色彩達到最終穩定飽和度"],
+                icon: "Timer",
+                neonColor: "#ffea00",
+                twColor: "text-yellow-400",
+                bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin_test_results.jpg", alt: "顯色結果" }]
+            },
+            {
+                id: "PHASE_05",
+                title: "數據解析 (Evaluation)",
+                desc: "將最終顯色結果與濃度光譜對照表進行比對。",
+                tasks: ["對齊濃度光譜對照表", "解析百分比", "紀錄數據並存檔"],
+                icon: "BarChart4",
+                neonColor: "#ff003c",
+                twColor: "text-red-500",
+                bgGlow: "shadow-[0_0_40px_rgba(255,0,60,0.2)]",
+                bgImage: "radial-gradient(circle at 20% 20%, rgba(255, 0, 60, 0.15) 0%, transparent 50%)",
+                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybim-qtest-result2-300x283.jpg", alt: "比對圖表" }]
+            },
+            {
+                id: "PHASE_06",
+                title: "安全處置 (Chemical Disposal)",
+                desc: "安全且合法地處置化學物質。請務必遵守以下程序。",
+                tasks: ["戴上手套護目鏡至陽台處理", "將試劑倒入 4 公升水中稀釋", "稀釋液可安全倒入排水管", "塑膠瓶可直接丟棄"],
+                icon: "Trash2",
+                neonColor: "#94a3b8",
+                twColor: "text-slate-200",
+                bgGlow: "shadow-[0_0_40px_rgba(148,163,184,0.15)]",
+                bgImage: "radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.1) 0%, transparent 60%)",
+                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
+            }
+        ];
+
+        function App() {
+            const [activeStep, setActiveStep] = React.useState(0);
+            const [activeImageIndex, setActiveImageIndex] = React.useState(0);
+            const [isTransitioning, setIsTransitioning] = React.useState(false);
+
+            const handleNext = () => {
+                if (activeStep < PROTOCOL_STEPS.length - 1) {
+                    setIsTransitioning(true);
+                    setTimeout(() => {
+                        setActiveStep(prev => prev + 1);
+                        setActiveImageIndex(0);
+                        setIsTransitioning(false);
+                    }, 300);
+                }
+            };
+
+            const handlePrev = () => {
+                if (activeStep > 0) {
+                    setIsTransitioning(true);
+                    setTimeout(() => {
+                        setActiveStep(prev => prev - 1);
+                        setActiveImageIndex(0);
+                        setIsTransitioning(false);
+                    }, 300);
+                }
+            };
+
+            const currentData = PROTOCOL_STEPS[activeStep];
+            const currentImage = currentData.images[activeImageIndex];
+
+            return (
+                <div className="psychedelic-bg crt-overlay flex flex-col items-center py-8 px-4 sm:px-8 relative min-h-screen" style={{ '--neon-color': currentData.neonColor }}>
+                    <div className="scanline"></div>
+                    <div className="absolute inset-0 opacity-40 pointer-events-none transition-all duration-1000" style={{ background: currentData.bgImage }}></div>
+
+                    {/* Header */}
+                    <header className="z-10 w-full max-w-5xl flex flex-col md:flex-row items-center justify-between mb-8 border-b border-white/20 pb-4">
+                        <div className="flex items-center gap-4">
+                            <Icon name="Zap" className={`w-10 h-10 ${currentData.twColor}`} strokeWidth={3} />
+                            <div>
+                                <h1 className="text-3xl md:text-4xl font-black text-white glitch-text uppercase" style={{ textShadow: `0 0 15px ${currentData.neonColor}` }}>Psilocybin_Terminal</h1>
+                                <p className="text-xs tracking-[0.4em] text-white/60 font-bold uppercase">Quantitative Analysis Protocol v2.8</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 mt-4 md:mt-0 font-mono text-base">
+                            <span className="text-white/40 font-bold uppercase text-sm">Sys_Status:</span>
+                            <span className={`${currentData.twColor} animate-pulse font-black text-sm`}>ONLINE</span>
+                            <span className="tracking-widest text-white font-black bg-white/10 px-3 py-1 rounded ml-4">
+                                {String(activeStep + 1).padStart(2, '0')} / {String(PROTOCOL_STEPS.length).padStart(2, '0')}
+                            </span>
+                        </div>
+                    </header>
+
+                    {/* Main Content Area */}
+                    <main className="z-10 w-full max-w-5xl relative mb-12">
+                        <div className="w-full h-2 bg-white/10 mb-8 relative rounded-full overflow-hidden shadow-lg">
+                            <div className="absolute top-0 left-0 h-full transition-all duration-700" style={{ width: `${((activeStep + 1) / PROTOCOL_STEPS.length) * 100}%`, backgroundColor: currentData.neonColor, boxShadow: `0 0 20px ${currentData.neonColor}` }} />
+                        </div>
+
+                        <div className={`cyber-border p-6 md:p-10 transition-all duration-300 ${currentData.bgGlow} ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                                
+                                {/* Visual Section */}
+                                <div className="lg:col-span-5 flex flex-col gap-6">
+                                    <div className="relative">
+                                        <div className="absolute w-full h-full rounded-full blur-3xl opacity-20" style={{ backgroundColor: currentData.neonColor }}></div>
+                                        <div className="relative z-10 w-full aspect-square border-2 border-white/20 bg-black rounded-xl overflow-hidden shadow-2xl">
+                                            <div className="absolute inset-0 z-20 pointer-events-none mix-blend-color opacity-70" style={{ backgroundColor: currentData.neonColor }}></div>
+                                            <img src={currentImage.src} alt={currentImage.alt} className="w-full h-full object-cover grayscale contrast-125" />
+                                            
+                                            {/* 直覺化圖解切換按鈕 */}
+                                            {currentData.images.length > 1 && (
+                                                <div className="absolute bottom-4 left-4 z-40 flex gap-2">
+                                                    {currentData.images.map((_, idx) => (
+                                                        <button 
+                                                            key={idx} 
+                                                            onClick={() => setActiveImageIndex(idx)} 
+                                                            className={`px-3 py-2 font-black text-xs border-2 transition-all backdrop-blur-xl rounded-lg ${activeImageIndex === idx ? 'bg-white text-black border-white' : 'bg-black/80 text-white border-white/30 hover:bg-white/10'}`}
+                                                        >
+                                                            圖解 {String.fromCharCode(65 + idx)}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="hidden lg:flex flex-col gap-3 font-mono text-xs text-white/40 border-l-2 border-white/10 pl-6 py-2 uppercase font-bold tracking-widest">
+                                        <span>Phase_ID: {currentData.id}</span>
+                                        <span>Encryption: Protocol_A_Level</span>
+                                    </div>
+                                </div>
+
+                                {/* Text & Task Content Section */}
+                                <div className="lg:col-span-7 flex flex-col">
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <div className="p-3 rounded-lg border-2 border-white/10 bg-white/5">
+                                           <Icon name={currentData.icon} className="w-8 h-8" style={{ color: currentData.neonColor }} strokeWidth={2.5} />
+                                        </div>
+                                        <span className="font-black text-base tracking-[0.3em] uppercase" style={{ color: currentData.neonColor }}>// 執行協議</span>
+                                    </div>
+                                    
+                                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
+                                        {currentData.title}
+                                    </h2>
+                                    
+                                    <p className="text-white text-2xl md:text-3xl leading-relaxed mb-8 font-black bg-white/5 p-4 rounded-lg border-l-4" style={{ borderColor: currentData.neonColor }}>
+                                        {currentData.desc}
+                                    </p>
+
+                                    <div className="bg-black/70 border-2 border-white/10 rounded-xl p-6 shadow-inner">
+                                        <h3 className="font-black text-sm tracking-widest text-white/50 mb-6 flex items-center gap-3 uppercase border-b border-white/5 pb-3">
+                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: currentData.neonColor }}></span>
+                                            操作任務清單
+                                        </h3>
+                                        
+                                        <ul className="space-y-6">
+                                            {currentData.tasks.map((task, index) => (
+                                                <li key={index} className="flex items-start gap-4 group">
+                                                    <Icon name="CheckCircle2" className="w-8 h-8 mt-0.5" style={{ color: currentData.neonColor }} strokeWidth={3} />
+                                                    <span className="text-2xl text-white font-black tracking-wide leading-tight">{task}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    {currentData.tip && (
+                                        <div className="mt-8 p-6 border-2 border-yellow-400 bg-yellow-400/10 rounded-xl shadow-[0_0_15px_rgba(250,204,21,0.1)]">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Icon name="Zap" className="w-5 h-5 text-yellow-400" strokeWidth={3} />
+                                                <span className="font-black text-sm text-yellow-400 tracking-tighter uppercase">PRO_TIP / 小秘訣</span>
+                                            </div>
+                                            <p className="text-yellow-100 text-xl md:text-2xl font-black leading-relaxed">{currentData.tip}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Navigation Controls */}
+                        <div className="flex justify-between items-center mt-10">
+                            <button onClick={handlePrev} disabled={activeStep === 0} className={`flex items-center gap-3 px-8 py-4 font-black border-2 rounded-xl text-xl uppercase transition-all ${activeStep === 0 ? 'opacity-20 cursor-not-allowed border-white/10' : 'text-white border-white/40 hover:bg-white/10 hover:border-white'}`}>
+                                <Icon name="ChevronLeft" className="w-8 h-8" /> 上一步
+                            </button>
+                            <button 
+                                onClick={handleNext} 
+                                disabled={activeStep === PROTOCOL_STEPS.length - 1} 
+                                className="px-12 py-4 font-black rounded-xl text-black text-xl uppercase flex items-center gap-3 transition-all duration-500 overflow-hidden" 
+                                style={{ 
+                                    backgroundColor: activeStep !== PROTOCOL_STEPS.length - 1 ? currentData.neonColor : '#333', 
+                                    opacity: activeStep === PROTOCOL_STEPS.length - 1 ? 0.2 : 1,
+                                    boxShadow: activeStep !== PROTOCOL_STEPS.length - 1 ? `0 0 25px ${currentData.neonColor}60` : 'none'
+                                }}
+                            >
+                                下一步 <Icon name="ChevronRight" className="w-8 h-8" />
+                            </button>
+                        </div>
+                    </main>
+
+                    {/* Information Section */}
+                    <section className="z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                        <div className="cyber-border p-8 bg-blue-500/10 border-blue-500/40 rounded-2xl">
+                            <h4 className="font-black text-white uppercase text-2xl mb-4 flex items-center gap-3">
+                                <Icon name="Package" className="text-blue-400 w-10 h-10" strokeWidth={2.5} /> 儲存與保存期限
+                            </h4>
+                            <p className="text-white text-xl font-black leading-relaxed">存放於冰箱。截至 2025 年 5 月，效期至少三個月。請務必存放在兒童接觸不到的地方。</p>
+                        </div>
+                        <div className="cyber-border p-8 bg-red-500/10 border-red-500/40 rounded-2xl">
+                            <h4 className="font-black text-white uppercase text-2xl mb-4 flex items-center gap-3">
+                                <Icon name="ShieldAlert" className="text-red-500 w-10 h-10" strokeWidth={2.5} /> 警告與免責聲明
+                            </h4>
+                            <ul className="text-white text-lg font-black space-y-3 list-disc pl-6">
+                                <li>無法區分有毒蘑菇。</li>
+                                <li>結果不代表樣品可安全食用。</li>
+                                <li>不對套件的使用或誤用承擔責任。</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    {/* Footer */}
+                    <footer className="z-10 w-full max-w-5xl flex justify-between items-center border-t-2 border-white/10 pt-8 pb-12 text-white/30 font-mono text-xs font-bold uppercase tracking-widest">
+                        <div>Warning: Unlicensed alteration restricted. Protocol AES-256 Enabled.</div>
+                        <div className="text-right">Coord: 34.0522 N, 118.2437 W</div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
