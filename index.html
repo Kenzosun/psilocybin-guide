@@ -365,11 +365,11 @@
                                         <span className="font-black text-base tracking-[0.3em] uppercase" style={{ color: currentData.neonColor }}>// 執行協議</span>
                                     </div>
                                     
-                                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
+                                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-6 tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] leading-tight">
                                         {currentData.title}
                                     </h2>
                                     
-                                    <p className="text-white text-2xl md:text-3xl leading-relaxed mb-8 font-black bg-white/5 p-4 rounded-lg border-l-4" style={{ borderColor: currentData.neonColor }}>
+                                    <p className="text-lg sm:text-2xl md:text-3xl leading-relaxed mb-8 font-black bg-white/5 p-4 rounded-lg border-l-4" style={{ borderColor: currentData.neonColor }}>
                                         {currentData.desc}
                                     </p>
 
@@ -379,11 +379,11 @@
                                             操作任務清單
                                         </h3>
                                         
-                                        <ul className="space-y-6">
+                                        <ul className="space-y-4 sm:space-y-6">
                                             {currentData.tasks.map((task, index) => (
-                                                <li key={index} className="flex items-start gap-4 group">
-                                                    <Icon name="CheckCircle2" className="w-8 h-8 mt-0.5" style={{ color: currentData.neonColor }} strokeWidth={3} />
-                                                    <span className="text-2xl text-white font-black tracking-wide leading-tight">{task}</span>
+                                                <li key={index} className="flex items-start gap-3 sm:gap-4 group">
+                                                    <Icon name="CheckCircle2" className="w-6 h-6 sm:w-8 sm:h-8 mt-1 flex-shrink-0" style={{ color: currentData.neonColor }} strokeWidth={3} />
+                                                    <span className="text-lg sm:text-2xl text-white font-black tracking-wide leading-snug">{task}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -395,7 +395,7 @@
                                                 <Icon name="Zap" className="w-5 h-5 text-yellow-400" strokeWidth={3} />
                                                 <span className="font-black text-sm text-yellow-400 tracking-tighter uppercase">PRO_TIP / 小秘訣</span>
                                             </div>
-                                            <p className="text-yellow-100 text-xl md:text-2xl font-black leading-relaxed">{currentData.tip}</p>
+                                            <p className="text-yellow-100 text-lg sm:text-xl md:text-2xl font-black leading-relaxed">{currentData.tip}</p>
                                         </div>
                                     )}
                                 </div>
@@ -403,21 +403,29 @@
                         </div>
 
                         {/* Navigation Controls */}
-                        <div className="flex justify-between items-center mt-10">
-                            <button onClick={handlePrev} disabled={activeStep === 0} className={`flex items-center gap-3 px-8 py-4 font-black border-2 rounded-xl text-xl uppercase transition-all ${activeStep === 0 ? 'opacity-20 cursor-not-allowed border-white/10' : 'text-white border-white/40 hover:bg-white/10 hover:border-white'}`}>
-                                <Icon name="ChevronLeft" className="w-8 h-8" /> 上一步
+                        <div className="flex justify-between items-center mt-10 gap-4">
+                            <button 
+                                onClick={handlePrev} 
+                                disabled={activeStep === 0} 
+                                className={`flex flex-1 sm:flex-initial items-center justify-center gap-2 px-4 py-3 sm:px-8 sm:py-4 font-black border-2 rounded-xl text-base sm:text-xl uppercase transition-all whitespace-nowrap ${activeStep === 0 ? 'opacity-20 cursor-not-allowed border-white/10' : 'text-white border-white/40 hover:bg-white/10 hover:border-white'}`}
+                            >
+                                <Icon name="ChevronLeft" className="w-5 h-5 sm:w-8 sm:h-8" /> 
+                                <span className="hidden xs:inline">上一步</span>
+                                <span className="xs:hidden">上一步</span>
                             </button>
                             <button 
                                 onClick={handleNext} 
                                 disabled={activeStep === PROTOCOL_STEPS.length - 1} 
-                                className="px-12 py-4 font-black rounded-xl text-black text-xl uppercase flex items-center gap-3 transition-all duration-500 overflow-hidden" 
+                                className={`flex flex-1 sm:flex-initial items-center justify-center gap-2 px-4 py-3 sm:px-12 sm:py-4 font-black rounded-xl text-black text-base sm:text-xl uppercase transition-all duration-500 overflow-hidden shadow-lg whitespace-nowrap ${activeStep === PROTOCOL_STEPS.length - 1 ? 'opacity-20 cursor-not-allowed' : ''}`}
                                 style={{ 
                                     backgroundColor: activeStep !== PROTOCOL_STEPS.length - 1 ? currentData.neonColor : '#333', 
                                     opacity: activeStep === PROTOCOL_STEPS.length - 1 ? 0.2 : 1,
                                     boxShadow: activeStep !== PROTOCOL_STEPS.length - 1 ? `0 0 25px ${currentData.neonColor}60` : 'none'
                                 }}
                             >
-                                下一步 <Icon name="ChevronRight" className="w-8 h-8" />
+                                <span className="hidden xs:inline">下一步</span>
+                                <span className="xs:hidden">下一步</span>
+                                <Icon name="ChevronRight" className="w-5 h-5 sm:w-8 sm:h-8" />
                             </button>
                         </div>
                     </main>
@@ -425,7 +433,7 @@
                     {/* Information Section */}
                     <section className="z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
                         <div className="cyber-border p-8 bg-blue-500/10 border-blue-500/40 rounded-2xl">
-                            <h4 className="font-black text-white uppercase text-2xl mb-4 flex items-center gap-3">
+                            <h4 className="font-black text-white uppercase text-xl mb-4 flex items-center gap-3">
                                 <Icon name="Package" className="text-blue-400 w-10 h-10" strokeWidth={2.5} /> 儲存與保存期限
                             </h4>
                             <p className="text-white text-xl font-black leading-relaxed">存放於冰箱。截至 2025 年 5 月，效期至少三個月。請務必存放在兒童接觸不到的地方。</p>
@@ -443,8 +451,8 @@
                     </section>
 
                     {/* Footer */}
-                    <footer className="z-10 w-full max-w-5xl flex justify-between items-center border-t-2 border-white/10 pt-8 pb-12 text-white/30 font-mono text-xs font-bold uppercase tracking-widest">
-                        <div>Warning: Unlicensed alteration restricted. Protocol AES-256 Enabled.</div>
+                    <footer className="z-10 w-full max-w-5xl flex justify-between items-center border-t-2 border-white/10 pt-8 pb-12 text-white/30 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                        <div className="max-w-[150px] sm:max-w-none">Warning: Unlicensed alteration restricted. Protocol AES-256 Enabled.</div>
                         <div className="text-right">Coord: 34.0522 N, 118.2437 W</div>
                     </footer>
                 </div>
