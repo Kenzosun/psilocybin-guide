@@ -269,6 +269,11 @@
             const [activeImageIndex, setActiveImageIndex] = React.useState(0);
             const [isTransitioning, setIsTransitioning] = React.useState(false);
 
+            // 修正：當 activeStep 改變時，自動滾動回頁面頂端
+            React.useEffect(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, [activeStep]);
+
             const handleNext = () => {
                 if (activeStep < PROTOCOL_STEPS.length - 1) {
                     setIsTransitioning(true);
