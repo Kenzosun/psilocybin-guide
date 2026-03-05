@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>量子純度檢測儀 - 操作協議 v2.8 (Stable)</title>
-    <!-- 1. Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 2. React Core -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <!-- 3. React DOM -->
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- 4. Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    <title>純度檢測試劑 - 完整操作教學指南</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         @keyframes scanline {
             0% { transform: translateY(-100%); opacity: 0; }
             50% { opacity: 0.3; }
             100% { transform: translateY(100vh); opacity: 0; }
         }
+
         @keyframes glitch {
             0% { transform: translate(0) }
             20% { transform: translate(-2px, 2px) }
@@ -27,38 +25,299 @@
             80% { transform: translate(2px, -2px) }
             100% { transform: translate(0) }
         }
-        
-        .crt-overlay::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #050510 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.04));
             z-index: 50;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
+
         .scanline {
             width: 100%;
             height: 100px;
-            background: linear-gradient(0deg, transparent, rgba(32, 255, 238, 0.2), transparent);
-            position: absolute;
+            background: linear-gradient(0deg, transparent, rgba(32, 255, 238, 0.15), transparent);
+            position: fixed;
             z-index: 49;
             animation: scanline 6s linear infinite;
             pointer-events: none;
         }
-        .psychedelic-bg {
-            background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #050510 100%);
-            overflow-x: hidden;
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
             min-height: 100vh;
         }
+
+        @media (min-width: 640px) {
+            .container {
+                padding: 24px 32px;
+            }
+        }
+
+        .max-w-5xl {
+            max-width: 64rem;
+            width: 100%;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 1;
+            transition: all 1s ease;
+        }
+
+        nav {
+            z-index: 10;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .kit-tab {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: 2px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .kit-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .kit-tab.active {
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-4px);
+        }
+
+        header {
+            z-index: 10;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            header {
+                flex-direction: row;
+            }
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .zap-icon {
+            width: 40px;
+            height: 40px;
+            stroke-width: 3;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .header-title {
+            font-size: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .header-title {
+                font-size: 32px;
+            }
+        }
+
+        .header-title h1 {
+            font-weight: 900;
+            text-transform: uppercase;
+            margin: 0;
+            text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+        }
+
+        .header-title .glitch-text:hover {
+            animation: glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+            text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            letter-spacing: 0.3em;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .header-right {
+                margin-top: 0;
+            }
+        }
+
+        .status-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .status-online {
+            animation: pulse-glow 1.5s ease-in-out infinite;
+            font-weight: 900;
+            font-size: 14px;
+        }
+
+        .step-counter {
+            letter-spacing: 0.2em;
+            color: white;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-left: 16px;
+            font-size: 14px;
+        }
+
+        main {
+            z-index: 10;
+            width: 100%;
+            max-width: 64rem;
+            position: relative;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 24px;
+            border-radius: 9999px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.7s ease;
+        }
+
+        .step-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            border: 2px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .step-dot:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .step-dot.active {
+            color: black;
+            border-color: white;
+        }
+
         .cyber-border {
             position: relative;
-            border: 2px solid rgba(255,255,255,0.15);
+            border: 2px solid rgba(255, 255, 255, 0.15);
             background: rgba(5, 5, 20, 0.9);
             backdrop-filter: blur(20px);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
         }
-        .cyber-border::before, .cyber-border::after {
+
+        @media (min-width: 768px) {
+            .cyber-border {
+                padding: 32px;
+            }
+        }
+
+        .cyber-border::before,
+        .cyber-border::after {
             content: '';
             position: absolute;
             width: 30px;
@@ -66,407 +325,1317 @@
             border: 3px solid;
             pointer-events: none;
         }
-        .cyber-border::before { top: -3px; left: -3px; border-color: var(--neon-color) transparent transparent var(--neon-color); }
-        .cyber-border::after { bottom: -3px; right: -3px; border-color: transparent var(--neon-color) var(--neon-color) transparent; }
-        
-        .glitch-text:hover {
-            animation: glitch 0.2s cubic-bezier(.25, .46, .45, .94) both infinite;
-            text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff;
+
+        .cyber-border::before {
+            top: -3px;
+            left: -3px;
+        }
+
+        .cyber-border::after {
+            bottom: -3px;
+            right: -3px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+
+        @media (min-width: 1024px) {
+            .content-grid.has-image {
+                grid-template-columns: 1fr 2fr;
+            }
+
+            .content-grid.has-image .image-section {
+                grid-column: 1;
+            }
+
+            .content-grid.has-image .text-section {
+                grid-column: 2;
+            }
+        }
+
+        .image-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .image-container {
+            position: relative;
+        }
+
+        .image-blur {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 9999px;
+            filter: blur(48px);
+            opacity: 0.2;
+        }
+
+        .image-display {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: black;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.5);
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none;
+            mix-blend-mode: color;
+            opacity: 0.5;
+        }
+
+        .image-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.25);
+        }
+
+        .image-tabs {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            z-index: 40;
+            display: flex;
+            gap: 8px;
+        }
+
+        .image-tab-btn {
+            padding: 4px 8px;
+            font-weight: 900;
+            font-size: 12px;
+            border: 2px solid;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .image-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .image-tab-btn.active {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        .text-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .icon-box {
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-box svg {
+            width: 28px;
+            height: 28px;
+            stroke-width: 2.5;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .section-label {
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            text-shadow: 0 4px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (min-width: 768px) {
+            h2 {
+                font-size: 40px;
+            }
+        }
+
+        .description {
+            color: white;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        @media (min-width: 768px) {
+            .description {
+                font-size: 20px;
+            }
+        }
+
+        .tasks-box {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: inset 0 4px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .tasks-header {
+            font-weight: 900;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+        }
+
+        .tasks-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .task-icon {
+            width: 24px;
+            height: 24px;
+            margin-top: 4px;
+            flex-shrink: 0;
+            stroke-width: 3;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .task-text {
+            font-size: 18px;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 0.025em;
+            line-height: 1.4;
+        }
+
+        .tip-box {
+            margin-top: 24px;
+            padding: 16px;
+            border: 2px solid #facc15;
+            background: rgba(250, 204, 21, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.1);
+        }
+
+        .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 900;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #facc15;
+        }
+
+        .tip-icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 3;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .tip-text {
+            color: rgba(254, 243, 199, 1);
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        @media (min-width: 768px) {
+            .tip-text {
+                font-size: 18px;
+            }
+        }
+
+        .nav-buttons-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            gap: 16px;
+        }
+
+        button {
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+        }
+
+        .prev-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-weight: 900;
+            border: 2px solid;
+            border-radius: 12px;
+            font-size: 16px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .prev-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .prev-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .chevron-icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .next-btn {
+            padding: 12px 40px;
+            font-weight: 900;
+            border-radius: 12px;
+            font-size: 16px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.5s ease;
+            color: black;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .info-cards {
+            z-index: 10;
+            width: 100%;
+            max-width: 64rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 48px;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            .info-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .info-card {
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .info-card.storage {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .info-card.warnings {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .info-card h4 {
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            font-size: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-card-icon {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            stroke-width: 2.5;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .info-card.storage h4 .info-card-icon {
+            color: #60a5fa;
+        }
+
+        .info-card.warnings h4 .info-card-icon {
+            color: #ef4444;
+        }
+
+        .info-card p {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .warnings-list {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            list-style: none;
+        }
+
+        .warning-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .warning-icon {
+            width: 16px;
+            height: 16px;
+            color: #fca5a5;
+            flex-shrink: 0;
+            margin-top: 2px;
+            stroke-width: 3;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        footer {
+            z-index: 10;
+            width: 100%;
+            max-width: 64rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            padding-top: 24px;
+            padding-bottom: 32px;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            gap: 8px;
+        }
+
+        @media (min-width: 640px) {
+            footer {
+                flex-direction: row;
+                gap: 0;
+            }
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        .fade-in {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.4s ease;
+        }
+
+        svg {
+            display: block;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(5, 5, 20, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="crt-overlay"></div>
+    <div class="scanline"></div>
+    <div class="container">
+        <div class="bg-overlay" id="bgOverlay"></div>
+        <nav>
+            <div class="nav-buttons" id="navButtons"></div>
+        </nav>
+        <header id="header"></header>
+        <main id="main"></main>
+        <section class="info-cards" id="infoCards"></section>
+        <footer id="footer"></footer>
+    </div>
 
-    <script type="text/babel">
-        // --- SVG Icons Component ---
-        const Icon = ({ name, className, style, strokeWidth = 2 }) => {
-            const icons = {
-                Scale: (
-                    <React.Fragment>
-                        <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
-                        <circle cx="7" cy="12" r="3"/>
-                        <path d="M7 2v2"/><path d="M7 15v2"/><path d="M19 12v2"/><path d="M19 2v2"/><path d="M19 15v2"/><path d="M2 12h2"/><path d="M12 12h2"/>
-                        <circle cx="19" cy="12" r="3"/>
-                    </React.Fragment>
-                ),
-                FlaskConical: (
-                    <React.Fragment>
-                        <path d="M10 2v8L4.36 19.38C3.33 21.05 4.54 23 6.48 23h11.04c1.94 0 3.15-1.95 2.12-3.62L14 10V2"/>
-                        <path d="M8.5 2h7"/><path d="M7 16h10"/>
-                    </React.Fragment>
-                ),
-                Syringe: (
-                    <React.Fragment>
-                        <path d="m18 2 4 4"/><path d="m17 7 3-3"/>
-                        <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/>
-                        <path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>
-                    </React.Fragment>
-                ),
-                Timer: (
-                    <React.Fragment>
-                        <line x1="10" x2="14" y1="2" y2="2"/>
-                        <line x1="12" x2="15" y1="14" y2="11"/>
-                        <circle cx="12" cy="14" r="8"/>
-                    </React.Fragment>
-                ),
-                BarChart4: (
-                    <React.Fragment>
-                        <path d="M3 3v18h18"/><path d="M13 17V9"/><path d="M18 17V5"/><path d="M8 17v-3"/>
-                    </React.Fragment>
-                ),
-                ChevronRight: <path d="m9 18 6-6-6-6"/>,
-                ChevronLeft: <path d="m15 18-6-6 6-6"/>,
-                Zap: <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>,
-                Thermometer: <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>,
-                CheckCircle2: (
-                    <React.Fragment>
-                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"/>
-                        <path d="m9 12 2 2 4-4"/>
-                    </React.Fragment>
-                ),
-                Trash2: (
-                    <React.Fragment>
-                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                        <line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
-                    </React.Fragment>
-                ),
-                ShieldAlert: (
-                    <React.Fragment>
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
-                        <line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
-                    </React.Fragment>
-                ),
-                Package: (
-                    <React.Fragment>
-                        <path d="M16.5 9.4 7.5 4.21"/>
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                        <polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/>
-                    </React.Fragment>
-                )
-            };
-            return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-                    {icons[name]}
-                </svg>
-            );
+    <script>
+        // Kit data
+        const KITS = {
+            psilocybin: {
+                id: "psilocybin",
+                name: "Psilocybin 裸蓋菇鹼",
+                subtitle: "蘑菇純度檢測",
+                terminalName: "Psilocybin_Terminal",
+                protocolVersion: "v2.8",
+                themeColor: "#a855f7",
+                twColor: "text-purple-400",
+                tabBg: "from-purple-600 to-purple-900",
+                steps: [
+                    {
+                        id: "PSI_01", title: "安全須知 — 請先閱讀！", icon: "ShieldAlert",
+                        neonColor: "#ff003c", twColor: "text-red-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,0,60,0.2)]",
+                        bgImage: "radial-gradient(circle at 20% 20%, rgba(255, 0, 60, 0.15) 0%, transparent 50%)",
+                        desc: "玻璃瓶中含有改良版 Hofmann 試劑（含硫酸），可能嚴重灼傷皮膚和眼睛。操作前務必做好防護。",
+                        tasks: [
+                            "戴上丁腈手套並取下隱形眼鏡，建議佩戴護目鏡",
+                            "若液體接觸皮膚，立即用水沖洗數分鐘",
+                            "若液體濺入眼睛，撐開上下眼瞼用水沖洗數分鐘",
+                            "將試劑盒存放在兒童和寵物（尤其是貓）接觸不到的地方",
+                            "測試結束後，依照廢棄處理步驟處理液體，切勿直接丟棄"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
+                    },
+                    {
+                        id: "PSI_02", title: "重要注意事項", icon: "Eye",
+                        neonColor: "#ffea00", twColor: "text-yellow-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                        desc: "開始操作前，請務必了解以下關鍵資訊，以確保測試結果的準確性。",
+                        tasks: [
+                            "迷幻蘑菇種類繁多，使用前請先確認品種。本試劑無法區分有毒與無毒蘑菇",
+                            "本試劑同時檢測裸蓋菇鹼 (psilocybin) 和裸蓋菇素 (psilocin)，最終顏色反映兩者的綜合含量",
+                            "測試前請先將整批乾燥蘑菇研磨均勻（使用研磨機或刀切碎），取少量均質材料測試即代表整批結果",
+                            "在室溫下使用。若存放冰箱，取出後需靜置一小時回溫",
+                            "在日光下或明亮的全光譜燈光下操作。需準備一張白紙放在瓶後 15-20 公分處",
+                            "每個人對顏色的感知不同，建議邀請其他人一起判讀結果",
+                            "操作前請完整閱讀所有步驟一遍"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin_purity_test_kit_box-600x600.jpg", alt: "試劑盒" }]
+                    },
+                    {
+                        id: "PSI_03", title: "步驟一：準備蘑菇樣本", icon: "Scale",
+                        neonColor: "#00ffff", twColor: "text-cyan-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(0,255,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 50%)",
+                        desc: "精確秤取乾燥蘑菇樣本。將樣本研磨至均勻粉末，確保化學反應的準確性。",
+                        tasks: [
+                            "使用研磨機將整批乾燥蘑菇研磨均勻。若無研磨機可用刀切碎，但務必切得很細",
+                            "將秤量舟放在毫克秤上並歸零 (Tare)",
+                            "秤取 150 毫克 (0.150 克) 的研磨蘑菇粉末",
+                            "若測試濃縮萃取物，請按比例減少用量（使結果落在色卡範圍內）"
+                        ],
+                        tip: "將秤量舟歸零後緩慢加入材料。過程中切勿觸摸或拿起秤量舟，以免影響精度。緩慢、連續的添加能確保毫克秤讀數穩定。",
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin-mushrooms-on-scale-300x300.jpg", alt: "秤重樣本" }]
+                    },
+                    {
+                        id: "PSI_04", title: "步驟二：萃取生物鹼", icon: "FlaskConical",
+                        neonColor: "#ff00ff", twColor: "text-fuchsia-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,0,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%)",
+                        desc: "將樣本倒入萃取管中，利用檸檬酸打破真菌細胞壁，抗壞血酸防止生物鹼降解。",
+                        tasks: [
+                            "將秤量舟對角捏合，將蘑菇粉末倒入塑膠萃取管中",
+                            "旋緊瓶蓋，劇烈搖晃約 10 秒",
+                            "靜置約 10 分鐘，期間再搖晃幾次"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/weigh-boat-pour-300x300.jpg", alt: "倒入萃取管" }]
+                    },
+                    {
+                        id: "PSI_05", title: "步驟三：用針筒抽取液體", icon: "Syringe",
+                        neonColor: "#39ff14", twColor: "text-green-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(57,255,20,0.2)]",
+                        bgImage: "radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1) 0%, transparent 60%)",
+                        desc: "利用針筒與棉球過濾器，從萃取管中抽取純淨液體。這是確保樣本無明顯顆粒雜質的關鍵步驟。",
+                        tasks: [
+                            "將鈍針頭旋緊安裝至針筒頂部",
+                            "將一顆棉球過濾器放入萃取管中",
+                            "將針筒插入管中，將鈍針頭斜面緊壓棉球底部邊緣",
+                            "使用中等壓力抽吸，將針筒完全填滿液體。液體應緩慢流暢通過，無可見蘑菇顆粒",
+                            "抽取完成後，取出針筒並旋緊萃取管瓶蓋"
+                        ],
+                        tip: "壓力是成功的關鍵：若完全抽不出液體代表壓得太緊；若流速過快則可能有顆粒混入。抽吸時出現小氣泡是正常的，那只是針頭內的空氣。",
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/extraction-process-2-300x300.jpg", alt: "抽取過程" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/cotton-pellet-example-300x296.jpg", alt: "棉球過濾器" }
+                        ]
+                    },
+                    {
+                        id: "PSI_06", title: "步驟四：校準針筒至 1.0 ml", icon: "Syringe",
+                        neonColor: "#00d4ff", twColor: "text-blue-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(0,212,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.15) 0%, transparent 50%)",
+                        desc: "必須排除所有空氣，並確保針筒內精確保留 1.0 毫升的反應液。",
+                        tasks: [
+                            "針尖朝上，靠近鈍針頭處握住針筒",
+                            "在底部輕彈或輕敲，讓氣泡浮至頂部",
+                            "持續輕敲直到底部所有空氣都消失",
+                            "空氣移至頂部後，緩緩推送活塞排出空氣",
+                            "緩慢而準確地推送活塞，直到針筒內剩餘精確 1.0 ml",
+                            "注意活塞底座頂端需對齊針筒管壁上的 1.0 ml 刻度線"
+                        ],
+                        tip: "若不小心推過頭或液體不足，請重新從棉球過濾器吸取少量液體並重複校準步驟。",
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/tap-tap-280x300.jpg", alt: "輕彈排氣泡" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/push-the-air-out-219x300.jpg", alt: "排出空氣" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/align-plunger-300x220.jpg", alt: "對齊刻度線" }
+                        ]
+                    },
+                    {
+                        id: "PSI_07", title: "步驟五：注入玻璃反應瓶", icon: "Droplets",
+                        neonColor: "#a855f7", twColor: "text-purple-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(168,85,247,0.2)]",
+                        bgImage: "radial-gradient(circle at 60% 40%, rgba(168, 85, 247, 0.15) 0%, transparent 50%)",
+                        desc: "將精確的 1.0 ml 液體注入含有 Hofmann 試劑的玻璃反應瓶中。",
+                        tasks: [
+                            "將針頭刺穿反應瓶頂部的橡膠隔膜",
+                            "緩慢推送活塞，將所有液體注入瓶中",
+                            "瓶內液體可能會變成略帶藍綠色"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin-reaction-vial-300x300.jpg", alt: "注入反應瓶" }]
+                    },
+                    {
+                        id: "PSI_08", title: "步驟六：熱水浴孵育", icon: "Thermometer",
+                        neonColor: "#ff4d00", twColor: "text-orange-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,77,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 50% 10%, rgba(255, 77, 0, 0.15) 0%, transparent 50%)",
+                        desc: "利用高溫環境催化顯色反應。溫度的準確性直接影響最終結果。",
+                        tasks: [
+                            "在爐上用鍋煮沸約四杯水（不要用電熱水壺）",
+                            "水完全沸騰後，將鍋從爐上移開",
+                            "立即用廚房夾子將玻璃瓶放入熱水中",
+                            "確保水位至少到達瓶身一半高度，但不超過瓶頂",
+                            "蓋上鍋蓋，設定計時器 15 分鐘等待"
+                        ],
+                        tip: "確保水在移開火源前完全沸騰。孵育時務必蓋上鍋蓋。僅微溫的水是不夠的，必須是剛沸騰的熱水。",
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/hot-bath-300x300.jpg", alt: "熱水浴" }]
+                    },
+                    {
+                        id: "PSI_09", title: "步驟七：判讀結果", icon: "BarChart4",
+                        neonColor: "#ffea00", twColor: "text-yellow-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                        desc: "15 分鐘後取出反應瓶，將液體顏色與隨附的色卡進行比對。",
+                        tasks: [
+                            "15 分鐘後從熱水浴中取出反應瓶",
+                            "在日光下或明亮全光譜燈光下，將反應瓶放在色卡旁邊",
+                            "在瓶後方約 15-20 公分處放置一張白紙",
+                            "比對液體顏色與色卡上的色帶。色帶對應每克均質材料中裸蓋菇鹼和裸蓋菇素的綜合含量",
+                            "若測試萃取物，需將結果乘以起始階段的濃縮倍數"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybim-qtest-result2-300x283.jpg", alt: "判讀結果" }]
+                    },
+                    {
+                        id: "PSI_10", title: "步驟八：安全廢棄處理", icon: "Trash2",
+                        neonColor: "#94a3b8", twColor: "text-slate-200",
+                        bgGlow: "shadow-[0_0_40px_rgba(148,163,184,0.15)]",
+                        bgImage: "radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.1) 0%, transparent 60%)",
+                        desc: "安全且合法地處置化學液體。請務必遵守以下程序，切勿直接倒入排水管。",
+                        tasks: [
+                            "到室外操作，戴上丁腈手套和護目鏡",
+                            "準備一桶約 4 公升的水",
+                            "旋開反應瓶的鋁質隔膜蓋，將 Hofmann 試劑緩慢倒入水中",
+                            "倒液時瓶口距水面幾公分，避免酸液飛濺",
+                            "倒完後蓋回瓶蓋，玻璃瓶可丟棄",
+                            "稀釋後的水可安全倒入排水管（切勿倒在地面上）",
+                            "塑膠萃取管可直接倒入排水管或丟棄"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
+                    }
+                ],
+                storage: "裸蓋菇鹼純度試劑盒應存放於冰箱中，可保存超過一年。截至 2025 年 5 月已確認至少可保存三個月。請務必存放在兒童接觸不到的地方。",
+                warnings: [
+                    "本試劑無法區分有毒蘑菇與無毒蘑菇。切勿將本試劑當作蘑菇鑑定工具使用。",
+                    "測試結果不代表樣品可安全食用。任何藥物使用都不是 100% 安全的。",
+                    "PurityTestKits.com 及 HRDS LLC 不對試劑盒的使用或誤用承擔任何責任。"
+                ]
+            },
+            lsd: {
+                id: "lsd",
+                name: "LSD 麥角酸二乙醯胺",
+                subtitle: "LSD 純度檢測",
+                terminalName: "LSD_Terminal",
+                protocolVersion: "v3.1",
+                themeColor: "#06b6d4",
+                twColor: "text-cyan-400",
+                tabBg: "from-cyan-600 to-cyan-900",
+                steps: [
+                    {
+                        id: "LSD_01", title: "安全須知 — 請先閱讀！", icon: "ShieldAlert",
+                        neonColor: "#ff003c", twColor: "text-red-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,0,60,0.2)]",
+                        bgImage: "radial-gradient(circle at 20% 20%, rgba(255, 0, 60, 0.15) 0%, transparent 50%)",
+                        desc: "塑膠瓶中含有 Hofmann 試劑（含硫酸），可能嚴重灼傷皮膚和眼睛。",
+                        tasks: [
+                            "戴上丁腈手套並取下隱形眼鏡，建議佩戴護目鏡",
+                            "若液體接觸皮膚，立即用水沖洗數分鐘",
+                            "若液體濺入眼睛，撐開上下眼瞼用水沖洗數分鐘",
+                            "存放在兒童和寵物（尤其是貓）接觸不到的地方",
+                            "在通風良好的區域操作。雖然甲醇蒸氣不致命，但不宜過量吸入",
+                            "不要旋開塑膠瓶蓋的白色部分（只開綠色部分）"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
+                    },
+                    {
+                        id: "LSD_02", title: "重要注意事項", icon: "Eye",
+                        neonColor: "#ffea00", twColor: "text-yellow-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                        desc: "開始操作前，請務必了解以下關鍵資訊。",
+                        tasks: [
+                            "試劑盒應存放在原包裝盒內或完全避光處。陽光甚至環境光都會降解化學物質。避光保存可維持至少一年",
+                            "在室溫下使用。從冰箱或冷凍庫取出後需回溫一小時",
+                            "在日光下或明亮全光譜燈光下操作",
+                            "每個人對顏色感知不同，建議邀請他人一起判讀。需在瓶後放置白紙",
+                            "操作前請完整閱讀所有步驟一遍。顯色後需在 15-20 分鐘內判讀",
+                            "注意：本試劑不適用於凝膠片 (gel tabs)"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/LSD_purity_test_kit_box-600x600.jpg", alt: "LSD 試劑盒" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/lsd-purity-test-kit-contents-600x600.jpg", alt: "試劑盒內容物" }
+                        ]
+                    },
+                    {
+                        id: "LSD_03", title: "步驟一：將 LSD 放入甲醇", icon: "FlaskConical",
+                        neonColor: "#00ffff", twColor: "text-cyan-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(0,255,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 50%)",
+                        desc: "將 LSD 樣本放入含甲醇的小瓶中進行萃取。",
+                        tasks: [
+                            "將半張吸墨紙 (blotter) 放入帶黑色瓶蓋的小瓶中。對角線剪切更容易均勻分割",
+                            "若測試液態 LSD，先搖晃 LSD 瓶子！LSD 溶解在液體中會沉至瓶底",
+                            "搖勻後滴入一滴液態 LSD"
+                        ],
+                        tip: "若吸墨紙卡在瓶壁上方沒有浸入甲醇中，搖晃瓶子讓甲醇沾濕紙片使其滑落。",
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/lsd-qtest-vial-blotter-half-197x300.jpg", alt: "放入半張吸墨紙" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/blotter-stuck2-153x300.jpg", alt: "吸墨紙卡住的情況" }
+                        ]
+                    },
+                    {
+                        id: "LSD_04", title: "步驟二：搖晃萃取", icon: "Droplets",
+                        neonColor: "#ff00ff", twColor: "text-fuchsia-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,0,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%)",
+                        desc: "讓甲醇充分萃取吸墨紙中的 LSD 成分。",
+                        tasks: [
+                            "蓋回瓶蓋，劇烈搖晃小瓶 30 秒",
+                            "靜置 15 分鐘，期間再搖晃兩次",
+                            "每次搖 30 秒，間隔約 5 分鐘靜置。即使是最厚的吸墨紙，三次搖晃也足夠",
+                            "若測試液態 LSD，只需搖晃幾秒即可進入下一步"
+                        ],
+                        tip: "重點是幫助甲醇完成 LSD 的萃取工作。你甚至可以持續搖晃整個過程，但手臂可能會酸。",
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/lsd-qtest-vial-blotter-half-197x300.jpg", alt: "搖晃萃取" }]
+                    },
+                    {
+                        id: "LSD_05", title: "步驟三：注入 Hofmann 試劑", icon: "Syringe",
+                        neonColor: "#39ff14", twColor: "text-green-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(57,255,20,0.2)]",
+                        bgImage: "radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1) 0%, transparent 60%)",
+                        desc: "將塑膠瓶中的 Hofmann 試劑全部注入玻璃反應瓶中。",
+                        tasks: [
+                            "旋開塑膠瓶的綠色瓶蓋（確保白色部分不動）",
+                            "將瓶嘴完全插入玻璃瓶頸部",
+                            "擠出全部內容物至玻璃瓶中",
+                            "蓋回玻璃瓶蓋，搖晃幾秒鐘",
+                            "液體應很快開始變成淡紫色 (lavender)",
+                            "設定計時器 15 分鐘等待顏色完全發展"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/squirt-186x300.png", alt: "錯誤方式 — 不要這樣做" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/01/squirt-2-170x300.png", alt: "正確方式 — 瓶嘴插入瓶頸" }
+                        ]
+                    },
+                    {
+                        id: "LSD_06", title: "步驟四：判讀結果", icon: "BarChart4",
+                        neonColor: "#ffea00", twColor: "text-yellow-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                        desc: "等待滿 15 分鐘後比對顏色。顏色會持續加深，判讀窗口為 15-20 分鐘。",
+                        tasks: [
+                            "等待滿 15 分鐘後再比對顏色，但不要超過 20 分鐘",
+                            "在日光或明亮全光譜燈光下，將反應瓶放在色卡旁",
+                            "在瓶後方約 15-20 公分處放置一張白紙",
+                            "比對液體顏色與色卡上的色帶。色帶對應瓶中 LSD 的含量",
+                            "若液體完全沒有變成紫色或藍色，表示瓶中沒有可檢測量的 LSD"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/lsd-qtest-evaluate-300x263.png", alt: "比對色卡判讀結果" }]
+                    },
+                    {
+                        id: "LSD_07", title: "步驟五：安全廢棄處理", icon: "Trash2",
+                        neonColor: "#94a3b8", twColor: "text-slate-200",
+                        bgGlow: "shadow-[0_0_40px_rgba(148,163,184,0.15)]",
+                        bgImage: "radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.1) 0%, transparent 60%)",
+                        desc: "切勿直接將液體倒入排水管。必須先用水稀釋甲醇/Hofmann 試劑混合液。",
+                        tasks: [
+                            "準備一桶約 4 公升的水，到室外操作",
+                            "戴上丁腈手套和護目鏡",
+                            "取下瓶蓋，將液體緩慢倒入水中",
+                            "倒液時瓶口距水面幾公分，避免酸液飛濺",
+                            "倒完後蓋回瓶蓋，瓶子可丟棄",
+                            "稀釋後的水可安全倒入排水管（切勿倒在地面上）",
+                            "或者可將瓶子存放在乾燥塑膠容器中，送至當地有害廢棄物回收站"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
+                    }
+                ],
+                storage: "將試劑盒存放在原包裝盒內或完全避光處。陽光甚至環境光都會隨時間降解化學物質。避光保存可維持至少一年。請務必存放在兒童接觸不到的地方。",
+                warnings: [
+                    "本試劑只能告訴您樣品中 LSD 的含量。樣品仍可能摻有一種或多種其他物質。",
+                    "測試結果不代表樣品可安全食用。任何藥物使用都不是 100% 安全的。",
+                    "PurityTestKits.com 及 HRDS LLC 不對試劑盒的使用或誤用承擔任何責任。"
+                ]
+            },
+            mdma: {
+                id: "mdma",
+                name: "MDMA 亞甲二氧甲基安非他命",
+                subtitle: "MDMA 純度檢測",
+                terminalName: "MDMA_Terminal",
+                protocolVersion: "v4.2",
+                themeColor: "#ec4899",
+                twColor: "text-pink-400",
+                tabBg: "from-pink-600 to-pink-900",
+                steps: [
+                    {
+                        id: "MDMA_01", title: "安全須知 — 請先閱讀！", icon: "ShieldAlert",
+                        neonColor: "#ff003c", twColor: "text-red-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,0,60,0.2)]",
+                        bgImage: "radial-gradient(circle at 20% 20%, rgba(255, 0, 60, 0.15) 0%, transparent 50%)",
+                        desc: "較大的隔膜瓶含硫酸，較小的瓶有時含庚烷。兩者都可能灼傷或刺激皮膚和眼睛。",
+                        tasks: [
+                            "戴上丁腈手套並取下隱形眼鏡，建議佩戴護目鏡",
+                            "若液體接觸皮膚，立即用水沖洗數分鐘",
+                            "若液體濺入眼睛，撐開上下眼瞼用水沖洗數分鐘",
+                            "存放在兒童和寵物（尤其是貓）接觸不到的地方",
+                            "若訂購含庚烷版本（用於搖頭丸錠劑），請在通風良好處操作。庚烷可燃，操作時請勿吸菸！",
+                            "測試結束後，依照廢棄處理步驟處置液體。切勿直接將液體留在瓶中丟棄"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
+                    },
+                    {
+                        id: "MDMA_02", title: "重要注意事項", icon: "Eye",
+                        neonColor: "#ffea00", twColor: "text-yellow-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                        desc: "開始操作前的重要提醒事項。",
+                        tasks: [
+                            "使用前請先用標準試劑確認您的樣品確實是 MDMA。其他藥物也可能產生類似的紫色反應",
+                            "在室溫下使用。若存放冰箱，取出後需回溫一小時",
+                            "在日光下或明亮全光譜燈光下操作。需準備一張白紙",
+                            "每個人對顏色感知不同，建議邀請他人一起判讀",
+                            "操作前請完整閱讀所有步驟。顯色後需在 15-20 分鐘內判讀"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/mdma_purity_test_kit_box-600x600.jpg", alt: "MDMA 試劑盒" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/mdma_purity_test_kit_contents-1-600x583.jpg", alt: "試劑盒內容物" }
+                        ]
+                    },
+                    {
+                        id: "MDMA_03", title: "步驟一：秤量 MDMA", icon: "Scale",
+                        neonColor: "#00ffff", twColor: "text-cyan-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(0,255,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 50%)",
+                        desc: "精確秤取 MDMA 樣本。結晶/粉末與搖頭丸錠劑的用量不同。",
+                        tasks: [
+                            "將秤量舟放在毫克秤上，秤取 25 毫克已壓碎的 MDMA 結晶或粉末",
+                            "若測試搖頭丸錠劑：先秤整顆錠劑的重量並記錄",
+                            "然後將部分錠劑壓成細粉，秤取 40 毫克（而非 25 毫克）"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/03/full-tablet-300x300.jpg", alt: "秤量整顆錠劑" }]
+                    },
+                    {
+                        id: "MDMA_04", title: "步驟二：將 MDMA 溶於水中", icon: "Droplets",
+                        neonColor: "#ff00ff", twColor: "text-fuchsia-500",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,0,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%)",
+                        desc: "將秤量好的 MDMA 粉末倒入含水的小瓶中完全溶解。",
+                        tasks: [
+                            "捏合秤量舟，將 MDMA 粉末倒入帶黑色瓶蓋的小瓶中（內含水）",
+                            "若測試搖頭丸錠劑，瓶中水上層還會有庚烷浮在上面",
+                            "蓋回瓶蓋，劇烈搖晃直到粉末或結晶完全溶解",
+                            "這可能需要幾分鐘，特別是有大塊結晶時",
+                            "查看瓶底——若還有可見物質，繼續搖晃"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/pouring-300x300.jpg", alt: "倒入萃取瓶" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/dissolved-mdma-300x300.jpg", alt: "完全溶解" }
+                        ]
+                    },
+                    {
+                        id: "MDMA_05", title: "步驟三：用針筒抽取水溶液", icon: "Syringe",
+                        neonColor: "#39ff14", twColor: "text-green-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(57,255,20,0.2)]",
+                        bgImage: "radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1) 0%, transparent 60%)",
+                        desc: "使用針筒從瓶中抽取少量水溶液。",
+                        tasks: [
+                            "將鈍針頭旋上針筒",
+                            "將針頭深入瓶中，穿過庚烷層（若有）",
+                            "在水層中小心抽取約 0.3 ml 的水溶液",
+                            "針筒只需填滿約三分之一"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/03/draw-out-water-300x300.jpg", alt: "抽取水溶液" }]
+                    },
+                    {
+                        id: "MDMA_06", title: "步驟四：校準針筒至 0.1 ml", icon: "Syringe",
+                        neonColor: "#00d4ff", twColor: "text-blue-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(0,212,255,0.2)]",
+                        bgImage: "radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.15) 0%, transparent 50%)",
+                        desc: "這是關鍵步驟。必須排除所有空氣和氣泡，並精確留下 0.1 ml 液體。",
+                        tasks: [
+                            "針尖朝上，輕彈或輕敲針筒讓氣泡浮至頂部",
+                            "緩緩推送活塞排出空氣",
+                            "繼續推送排出多餘液體，直到剩餘精確 0.1 ml",
+                            "注意活塞底座頂端需對齊 0.1 ml 刻度線"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/bubbles-300x300.jpg", alt: "排除氣泡" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/align-the-plunger-300x297.jpg", alt: "對齊活塞刻度" }
+                        ]
+                    },
+                    {
+                        id: "MDMA_07", title: "步驟五：注入反應瓶", icon: "Droplets",
+                        neonColor: "#ec4899", twColor: "text-pink-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(236,72,153,0.2)]",
+                        bgImage: "radial-gradient(circle at 60% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 50%)",
+                        desc: "將精確的 0.1 ml MDMA 水溶液注入含 Marquis 試劑的反應瓶中。",
+                        tasks: [
+                            "將針頭刺穿反應瓶頂部的隔膜",
+                            "推送液體注入反應瓶。瓶子會微微發熱",
+                            "拔出針頭，搖晃瓶子幾秒鐘使 MDMA 水溶液與 Marquis 試劑混合",
+                            "顏色應慢慢開始轉為紫色",
+                            "設定計時器 15 分鐘"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/MDMA_test_kit_vial2-300x300.jpg", alt: "注入反應瓶" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/MDMA_QTest_color_vial-300x300.jpg", alt: "開始變色" }
+                        ]
+                    },
+                    {
+                        id: "MDMA_08", title: "步驟六：判讀結果", icon: "BarChart4",
+                        neonColor: "#ffea00", twColor: "text-yellow-400",
+                        bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
+                        bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
+                        desc: "15 分鐘後比對顏色。判讀窗口為 15-20 分鐘，之後顏色會持續加深。",
+                        tasks: [
+                            "等待滿 15 分鐘後再比對，但不要超過 20 分鐘",
+                            "在日光或明亮全光譜燈光下操作",
+                            "在瓶後方放置白紙，比對液體顏色與色卡",
+                            "結晶/粉末：若秤 25 mg 而色卡顯示約 20 mg，代表純度約 80%",
+                            "搖頭丸錠劑：將整顆重量除以 40，再乘以色卡讀數，即為整顆 MDMA 含量",
+                            "若完全沒有變紫色，代表不含 MDMA 或低於檢測限"
+                        ],
+                        tip: null,
+                        images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/03/mdma_purity_test_kit_evaluate-300x300.jpg", alt: "比對色卡判讀結果" }]
+                    },
+                    {
+                        id: "MDMA_09", title: "步驟七：安全廢棄處理", icon: "Trash2",
+                        neonColor: "#94a3b8", twColor: "text-slate-200",
+                        bgGlow: "shadow-[0_0_40px_rgba(148,163,184,0.15)]",
+                        bgImage: "radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.1) 0%, transparent 60%)",
+                        desc: "分別處理反應瓶和萃取瓶中的液體。",
+                        tasks: [
+                            "反應瓶：切勿直接倒入排水管。先用約 4 公升水稀釋",
+                            "到室外操作，戴上手套和護目鏡",
+                            "旋開反應瓶隔膜蓋，緩慢將 Marquis 試劑倒入水中",
+                            "瓶口距水面幾公分，避免酸液飛濺",
+                            "稀釋後的水可安全倒入排水管（不要倒在地面上）",
+                            "萃取瓶：若只含水，直接倒入排水管即可",
+                            "若含庚烷，到室外倒入蛭石杯中。靜置 30 分鐘蒸發後，蓋上蓋子與廢油漆一起送至有害廢棄物回收站"
+                        ],
+                        tip: null,
+                        images: [
+                            { src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" },
+                            { src: "https://puritytestkits.com/wp-content/uploads/2023/03/vermiculite-2-300x156.jpg", alt: "蛭石處理庚烷" }
+                        ]
+                    }
+                ],
+                storage: "MDMA 純度試劑盒可在室溫下保存，有效期超過一年。請務必存放在兒童接觸不到的地方。",
+                warnings: [
+                    "本試劑只能告訴您樣品中 MDMA 的含量。樣品仍可能摻有一種或多種其他物質。",
+                    "測試結果不代表樣品可安全食用。任何藥物使用都不是 100% 安全的。",
+                    "PurityTestKits.com 及 HRDS LLC 不對試劑盒的使用或誤用及結果承擔任何責任。"
+                ]
+            }
         };
 
-        const PROTOCOL_STEPS = [
-            {
-                id: "PHASE_01",
-                title: "質量標定 (Sample Prep)",
-                desc: "精確秤取乾燥真菌樣本。為確保化學反應的光譜精確度，請將樣本研磨至均勻粉末狀態。",
-                tasks: ["將秤量舟放在托盤上並歸零 (Tare)", "緩慢灑入材料直至 150 毫克 (0.150g)", "研磨樣本至均勻粉末狀態"],
-                tip: "TIP! 將秤量舟歸零後緩慢加入材料。過程中切勿觸摸或拿起秤量舟，以免影響精度。緩慢、連續的添加過程能確保毫克秤讀數穩定。",
-                icon: "Scale",
-                neonColor: "#00ffff",
-                twColor: "text-cyan-400",
-                bgGlow: "shadow-[0_0_40px_rgba(0,255,255,0.2)]",
-                bgImage: "radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.15) 0%, transparent 50%)",
-                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin-mushrooms-on-scale-300x300.jpg", alt: "秤重樣本" }]
-            },
-            {
-                id: "PHASE_02",
-                title: "萃取序列 (Extraction)",
-                desc: "將樣本置入緩衝液中並打破細胞壁，啟動生物鹼的完全釋放協議。",
-                tasks: ["將樣本粉末置入萃取管", "劇烈震盪 10 秒以打破細胞壁", "靜置 10 分鐘進行化學釋放"],
-                icon: "FlaskConical",
-                neonColor: "#ff00ff",
-                twColor: "text-fuchsia-500",
-                bgGlow: "shadow-[0_0_40px_rgba(255,0,255,0.2)]",
-                bgImage: "radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%)",
-                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/weigh-boat-pour-300x300.jpg", alt: "倒入試管" }]
-            },
-            {
-                id: "PHASE_03",
-                title: "過濾與液體抽取 (Extraction)",
-                desc: "利用針筒與棉球過濾器，從萃取管中抽取純淨反應液。這是確保樣本無明顯顆粒雜質的關鍵過濾過程。",
-                tasks: ["將鈍針頭旋緊安裝至針筒頂部", "將棉球過濾器投入萃取管中", "針頭斜面緊壓棉球底部", "使用中等壓力抽吸直至全滿", "完成後將萃取管重新封口"],
-                tip: "TIP! 壓力是成功的關鍵：若抽不出液體代表壓得太緊；若流速過快可能有顆粒混入。抽吸時出現小氣泡是正常的。",
-                icon: "Syringe",
-                neonColor: "#39ff14",
-                twColor: "text-green-400",
-                bgGlow: "shadow-[0_0_40px_rgba(57,255,20,0.2)]",
-                bgImage: "radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1) 0%, transparent 60%)",
-                images: [
-                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/extraction-process-2-300x300.jpg", alt: "抽取液體" },
-                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/cotton-pellet-example-300x296.jpg", alt: "棉球定位" }
-                ]
-            },
-            {
-                id: "PHASE_03_A",
-                title: "針筒精確校準 (Syringe Prep)",
-                desc: "必須排除所有空氣並確保針筒內精確保留 1.0 毫升的反應液。",
-                tasks: ["針尖向上輕彈排除底部氣泡", "緩緩推送活塞直至排除頂部空氣", "對齊 1.0 ml 線", "將精確的 1.0 ml 注入玻璃測試載具"],
-                tip: "TIP! 若不小心推過頭或液體不足，請重新從棉球過濾器吸取少量液體並重複校準步驟。",
-                icon: "Syringe",
-                neonColor: "#00d4ff",
-                twColor: "text-blue-400",
-                bgGlow: "shadow-[0_0_40px_rgba(0,212,255,0.2)]",
-                bgImage: "radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.15) 0%, transparent 50%)",
-                images: [
-                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/tap-tap-280x300.jpg", alt: "排氣泡" },
-                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/push-the-air-out-219x300.jpg", alt: "排空氣" },
-                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/align-plunger-300x220.jpg", alt: "對齊刻度" },
-                    { src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin-reaction-vial-300x300.jpg", alt: "注入載具" }
-                ]
-            },
-            {
-                id: "PHASE_03_B",
-                title: "熱能孵育協議 (Thermal Incubation)",
-                desc: "利用高溫環境催化顯色反應。溫度的準確性直接影響最終結果。",
-                tasks: ["將水煮至沸騰後移開火源", "將載具置入熱水中（水深需達一半）", "蓋上鍋蓋啟動定時器 15 分鐘", "確保溫度接近 200°F 進行孵育"],
-                tip: "TIP! 確保水在移開火源前完全沸騰。孵育時務必蓋上鍋蓋。僅微熱的水溫是不夠的。",
-                icon: "Thermometer",
-                neonColor: "#ff4d00",
-                twColor: "text-orange-500",
-                bgGlow: "shadow-[0_0_40px_rgba(255,77,0,0.2)]",
-                bgImage: "radial-gradient(circle at 50% 10%, rgba(255, 77, 0, 0.15) 0%, transparent 50%)",
-                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/hot-bath-300x300.jpg", alt: "熱水浴" }]
-            },
-            {
-                id: "PHASE_04",
-                title: "顯色觀察 (Color Wait)",
-                desc: "完成熱能孵育後將載具取出。系統需要最終的冷卻顯色穩定時間。",
-                tasks: ["取出載具並置於室溫環境", "觀察液體色彩隨冷卻演化", "等待色彩達到最終穩定飽和度"],
-                icon: "Timer",
-                neonColor: "#ffea00",
-                twColor: "text-yellow-400",
-                bgGlow: "shadow-[0_0_40px_rgba(255,234,0,0.2)]",
-                bgImage: "radial-gradient(circle at 80% 80%, rgba(255, 234, 0, 0.15) 0%, transparent 50%)",
-                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybin_test_results.jpg", alt: "顯色結果" }]
-            },
-            {
-                id: "PHASE_05",
-                title: "數據解析 (Evaluation)",
-                desc: "將最終顯色結果與濃度光譜對照表進行比對。",
-                tasks: ["對齊濃度光譜對照表", "解析百分比", "紀錄數據並存檔"],
-                icon: "BarChart4",
-                neonColor: "#ff003c",
-                twColor: "text-red-500",
-                bgGlow: "shadow-[0_0_40px_rgba(255,0,60,0.2)]",
-                bgImage: "radial-gradient(circle at 20% 20%, rgba(255, 0, 60, 0.15) 0%, transparent 50%)",
-                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2023/01/psilocybim-qtest-result2-300x283.jpg", alt: "比對圖表" }]
-            },
-            {
-                id: "PHASE_06",
-                title: "安全處置 (Chemical Disposal)",
-                desc: "安全且合法地處置化學物質。請務必遵守以下程序。",
-                tasks: ["戴上手套護目鏡至陽台處理", "將試劑倒入 4 公升水中稀釋", "稀釋液可安全倒入排水管", "塑膠瓶可直接丟棄"],
-                icon: "Trash2",
-                neonColor: "#94a3b8",
-                twColor: "text-slate-200",
-                bgGlow: "shadow-[0_0_40px_rgba(148,163,184,0.15)]",
-                bgImage: "radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.1) 0%, transparent 60%)",
-                images: [{ src: "https://puritytestkits.com/wp-content/uploads/2025/02/gloves-goggles-150x150.png", alt: "安全裝備" }]
-            }
-        ];
+        // SVG Icons
+        const icons = {
+            Scale: '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><circle cx="7" cy="12" r="3"/><path d="M7 2v2"/><path d="M7 15v2"/><path d="M19 12v2"/><path d="M19 2v2"/><path d="M19 15v2"/><path d="M2 12h2"/><path d="M12 12h2"/><circle cx="19" cy="12" r="3"/>',
+            FlaskConical: '<path d="M10 2v8L4.36 19.38C3.33 21.05 4.54 23 6.48 23h11.04c1.94 0 3.15-1.95 2.12-3.62L14 10V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+            Syringe: '<path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>',
+            BarChart4: '<path d="M3 3v18h18"/><path d="M13 17V9"/><path d="M18 17V5"/><path d="M8 17v-3"/>',
+            ChevronRight: '<path d="m9 18 6-6-6-6"/>',
+            ChevronLeft: '<path d="m15 18-6-6 6-6"/>',
+            Zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+            Thermometer: '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>',
+            CheckCircle2: '<path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"/><path d="m9 12 2 2 4-4"/>',
+            Trash2: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+            ShieldAlert: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+            Package: '<path d="M16.5 9.4 7.5 4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/>',
+            Droplets: '<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 14.1c1.34 0 2.44-1.12 2.44-2.48 0-.71-.35-1.38-1.05-1.95-.69-.56-1.25-1.3-1.39-2.17-.14.87-.7 1.61-1.39 2.17-.7.57-1.05 1.24-1.05 1.95 0 1.36 1.1 2.48 2.44 2.48z"/><path d="M17 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S17.29 6.75 17 5.3c-.29 1.45-1.14 2.84-2.29 3.76S13 11.1 13 12.25c0 2.22 1.8 4.05 4 4.05z"/>',
+            Eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+            AlertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>'
+        };
 
-        function App() {
-            const [activeStep, setActiveStep] = React.useState(0);
-            const [activeImageIndex, setActiveImageIndex] = React.useState(0);
-            const [isTransitioning, setIsTransitioning] = React.useState(false);
-
-            // 當 activeStep 改變時，自動滾動回頁面頂端
-            React.useEffect(() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, [activeStep]);
-
-            const handleNext = () => {
-                if (activeStep < PROTOCOL_STEPS.length - 1) {
-                    setIsTransitioning(true);
-                    setTimeout(() => {
-                        setActiveStep(prev => prev + 1);
-                        setActiveImageIndex(0);
-                        setIsTransitioning(false);
-                    }, 300);
-                }
-            };
-
-            const handlePrev = () => {
-                if (activeStep > 0) {
-                    setIsTransitioning(true);
-                    setTimeout(() => {
-                        setActiveStep(prev => prev - 1);
-                        setActiveImageIndex(0);
-                        setIsTransitioning(false);
-                    }, 300);
-                }
-            };
-
-            const currentData = PROTOCOL_STEPS[activeStep];
-            const currentImage = currentData.images[activeImageIndex];
-
-            return (
-                <div className="psychedelic-bg crt-overlay flex flex-col items-center py-8 px-4 sm:px-8 relative min-h-screen" style={{ '--neon-color': currentData.neonColor }}>
-                    <div className="scanline"></div>
-                    <div className="absolute inset-0 opacity-40 pointer-events-none transition-all duration-1000" style={{ background: currentData.bgImage }}></div>
-
-                    {/* Header */}
-                    <header className="z-10 w-full max-w-5xl flex flex-col md:flex-row items-center justify-between mb-8 border-b border-white/20 pb-4">
-                        <div className="flex items-center gap-4">
-                            <Icon name="Zap" className={`w-10 h-10 ${currentData.twColor}`} strokeWidth={3} />
-                            <div>
-                                <h1 className="text-3xl md:text-4xl font-black text-white glitch-text uppercase" style={{ textShadow: `0 0 15px ${currentData.neonColor}` }}>Psilocybin_Terminal</h1>
-                                <p className="text-xs tracking-[0.4em] text-white/60 font-bold uppercase">Quantitative Analysis Protocol v2.8</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 mt-4 md:mt-0 font-mono text-base">
-                            <span className="text-white/40 font-bold uppercase text-sm">Sys_Status:</span>
-                            <span className={`${currentData.twColor} animate-pulse font-black text-sm`}>ONLINE</span>
-                            <span className="tracking-widest text-white font-black bg-white/10 px-3 py-1 rounded ml-4">
-                                {String(activeStep + 1).padStart(2, '0')} / {String(PROTOCOL_STEPS.length).padStart(2, '0')}
-                            </span>
-                        </div>
-                    </header>
-
-                    {/* Main Content Area */}
-                    <main className="z-10 w-full max-w-5xl relative mb-12">
-                        <div className="w-full h-2 bg-white/10 mb-8 relative rounded-full overflow-hidden shadow-lg">
-                            <div className="absolute top-0 left-0 h-full transition-all duration-700" style={{ width: `${((activeStep + 1) / PROTOCOL_STEPS.length) * 100}%`, backgroundColor: currentData.neonColor, boxShadow: `0 0 20px ${currentData.neonColor}` }} />
-                        </div>
-
-                        <div className={`cyber-border p-6 md:p-10 transition-all duration-300 ${currentData.bgGlow} ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                                
-                                {/* Visual Section */}
-                                <div className="lg:col-span-5 flex flex-col gap-6">
-                                    <div className="relative">
-                                        <div className="absolute w-full h-full rounded-full blur-3xl opacity-20" style={{ backgroundColor: currentData.neonColor }}></div>
-                                        <div className="relative z-10 w-full aspect-square border-2 border-white/20 bg-black rounded-xl overflow-hidden shadow-2xl">
-                                            <div className="absolute inset-0 z-20 pointer-events-none mix-blend-color opacity-70" style={{ backgroundColor: currentData.neonColor }}></div>
-                                            <img src={currentImage.src} alt={currentImage.alt} className="w-full h-full object-cover grayscale contrast-125" />
-                                            
-                                            {/* 直覺化圖解切換按鈕 */}
-                                            {currentData.images.length > 1 && (
-                                                <div className="absolute bottom-4 left-4 z-40 flex gap-2">
-                                                    {currentData.images.map((_, idx) => (
-                                                        <button 
-                                                            key={idx} 
-                                                            onClick={() => setActiveImageIndex(idx)} 
-                                                            className={`px-3 py-2 font-black text-xs border-2 transition-all backdrop-blur-xl rounded-lg ${activeImageIndex === idx ? 'bg-white text-black border-white' : 'bg-black/80 text-white border-white/30 hover:bg-white/10'}`}
-                                                        >
-                                                            圖解 {String.fromCharCode(65 + idx)}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="hidden lg:flex flex-col gap-3 font-mono text-xs text-white/40 border-l-2 border-white/10 pl-6 py-2 uppercase font-bold tracking-widest">
-                                        <span>Phase_ID: {currentData.id}</span>
-                                        <span>Encryption: Protocol_A_Level</span>
-                                    </div>
-                                </div>
-
-                                {/* Text & Task Content Section */}
-                                <div className="lg:col-span-7 flex flex-col">
-                                    <div className="flex items-center gap-4 mb-3">
-                                        <div className="p-3 rounded-lg border-2 border-white/10 bg-white/5">
-                                           <Icon name={currentData.icon} className="w-8 h-8" style={{ color: currentData.neonColor }} strokeWidth={2.5} />
-                                        </div>
-                                        <span className="font-black text-base tracking-[0.3em] uppercase" style={{ color: currentData.neonColor }}>// 執行協議</span>
-                                    </div>
-                                    
-                                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-6 tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] leading-tight">
-                                        {currentData.title}
-                                    </h2>
-                                    
-                                    {/* 修正：將描述文字顏色明確設定為 text-white，解決變為黑色的問題 */}
-                                    <p className="text-white text-lg sm:text-2xl md:text-3xl leading-relaxed mb-8 font-black bg-white/5 p-4 rounded-lg border-l-4" style={{ borderColor: currentData.neonColor }}>
-                                        {currentData.desc}
-                                    </p>
-
-                                    <div className="bg-black/70 border-2 border-white/10 rounded-xl p-6 shadow-inner">
-                                        <h3 className="font-black text-sm tracking-widest text-white/50 mb-6 flex items-center gap-3 uppercase border-b border-white/5 pb-3">
-                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: currentData.neonColor }}></span>
-                                            操作任務清單
-                                        </h3>
-                                        
-                                        <ul className="space-y-4 sm:space-y-6">
-                                            {currentData.tasks.map((task, index) => (
-                                                <li key={index} className="flex items-start gap-3 sm:gap-4 group">
-                                                    <Icon name="CheckCircle2" className="w-6 h-6 sm:w-8 sm:h-8 mt-1 flex-shrink-0" style={{ color: currentData.neonColor }} strokeWidth={3} />
-                                                    <span className="text-lg sm:text-2xl text-white font-black tracking-wide leading-snug">{task}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {currentData.tip && (
-                                        <div className="mt-8 p-6 border-2 border-yellow-400 bg-yellow-400/10 rounded-xl shadow-[0_0_15px_rgba(250,204,21,0.1)]">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Icon name="Zap" className="w-5 h-5 text-yellow-400" strokeWidth={3} />
-                                                <span className="font-black text-sm text-yellow-400 tracking-tighter uppercase">PRO_TIP / 小秘訣</span>
-                                            </div>
-                                            <p className="text-yellow-100 text-lg sm:text-xl md:text-2xl font-black leading-relaxed">{currentData.tip}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Navigation Controls */}
-                        <div className="flex justify-between items-center mt-10 gap-4">
-                            <button 
-                                onClick={handlePrev} 
-                                disabled={activeStep === 0} 
-                                className={`flex flex-1 sm:flex-initial items-center justify-center gap-2 px-4 py-3 sm:px-8 sm:py-4 font-black border-2 rounded-xl text-base sm:text-xl uppercase transition-all whitespace-nowrap ${activeStep === 0 ? 'opacity-20 cursor-not-allowed border-white/10' : 'text-white border-white/40 hover:bg-white/10 hover:border-white'}`}
-                            >
-                                <Icon name="ChevronLeft" className="w-5 h-5 sm:w-8 sm:h-8" /> 
-                                <span className="hidden xs:inline">上一步</span>
-                                <span className="xs:hidden">上一步</span>
-                            </button>
-                            <button 
-                                onClick={handleNext} 
-                                disabled={activeStep === PROTOCOL_STEPS.length - 1} 
-                                className={`flex flex-1 sm:flex-initial items-center justify-center gap-2 px-4 py-3 sm:px-12 sm:py-4 font-black rounded-xl text-black text-base sm:text-xl uppercase transition-all duration-500 overflow-hidden shadow-lg whitespace-nowrap ${activeStep === PROTOCOL_STEPS.length - 1 ? 'opacity-20 cursor-not-allowed' : ''}`}
-                                style={{ 
-                                    backgroundColor: activeStep !== PROTOCOL_STEPS.length - 1 ? currentData.neonColor : '#333', 
-                                    opacity: activeStep === PROTOCOL_STEPS.length - 1 ? 0.2 : 1,
-                                    boxShadow: activeStep !== PROTOCOL_STEPS.length - 1 ? `0 0 25px ${currentData.neonColor}60` : 'none'
-                                }}
-                            >
-                                <span className="hidden xs:inline">下一步</span>
-                                <span className="xs:hidden">下一步</span>
-                                <Icon name="ChevronRight" className="w-5 h-5 sm:w-8 sm:h-8" />
-                            </button>
-                        </div>
-                    </main>
-
-                    {/* Information Section */}
-                    <section className="z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-                        <div className="cyber-border p-8 bg-blue-500/10 border-blue-500/40 rounded-2xl">
-                            <h4 className="font-black text-white uppercase text-xl mb-4 flex items-center gap-3">
-                                <Icon name="Package" className="text-blue-400 w-10 h-10" strokeWidth={2.5} /> 儲存與保存期限
-                            </h4>
-                            <p className="text-white text-xl font-black leading-relaxed">存放於冰箱。截至 2025 年 5 月，效期至少三個月。請務必存放在兒童接觸不到的地方。</p>
-                        </div>
-                        <div className="cyber-border p-8 bg-red-500/10 border-red-500/40 rounded-2xl">
-                            <h4 className="font-black text-white uppercase text-2xl mb-4 flex items-center gap-3">
-                                <Icon name="ShieldAlert" className="text-red-500 w-10 h-10" strokeWidth={2.5} /> 警告與免責聲明
-                            </h4>
-                            <ul className="text-white text-lg font-black space-y-3 list-disc pl-6">
-                                <li>無法區分有毒蘑菇。</li>
-                                <li>結果不代表樣品可安全食用。</li>
-                                <li>不對套件的使用或誤用承擔責任。</li>
-                            </ul>
-                        </div>
-                    </section>
-
-                    {/* Footer */}
-                    <footer className="z-10 w-full max-w-5xl flex justify-between items-center border-t-2 border-white/10 pt-8 pb-12 text-white/30 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                        <div className="max-w-[150px] sm:max-w-none">Warning: Unlicensed alteration restricted. Protocol AES-256 Enabled.</div>
-                        <div className="text-right">Coord: 34.0522 N, 118.2437 W</div>
-                    </footer>
-                </div>
-            );
+        function createSVGIcon(name, className = '', size = 24) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            svg.setAttribute('viewBox', '0 0 24 24');
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
+            svg.setAttribute('stroke-width', '2');
+            svg.setAttribute('stroke-linecap', 'round');
+            svg.setAttribute('stroke-linejoin', 'round');
+            svg.setAttribute('width', size);
+            svg.setAttribute('height', size);
+            svg.style.minWidth = size + 'px';
+            if (className) svg.setAttribute('class', className);
+            svg.innerHTML = icons[name] || '';
+            return svg;
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // State
+        let state = {
+            activeKit: 'psilocybin',
+            activeStep: 0,
+            activeImageIndex: 0
+        };
+
+        // Render functions
+        function renderNavButtons() {
+            const container = document.getElementById('navButtons');
+            container.innerHTML = '';
+            Object.values(KITS).forEach(kit => {
+                const btn = document.createElement('button');
+                btn.className = 'kit-tab';
+                if (kit.id === state.activeKit) {
+                    btn.classList.add('active');
+                    btn.style.background = `linear-gradient(to right, ${kit.themeColor}, ${kit.themeColor})`;
+                    btn.style.boxShadow = `0 0 25px ${kit.themeColor}40`;
+                }
+                btn.textContent = kit.subtitle;
+                btn.onclick = () => changeKit(kit.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function renderHeader() {
+            const kit = KITS[state.activeKit];
+            const currentData = kit.steps[state.activeStep];
+            const container = document.getElementById('header');
+            container.innerHTML = `
+                <div class="header-left">
+                    <svg class="zap-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${kit.themeColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    <div class="header-title">
+                        <h1 class="glitch-text">${kit.terminalName}</h1>
+                        <p class="header-subtitle">Quantitative Analysis Protocol ${kit.protocolVersion}</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="status-label">Sys_Status:</span>
+                    <span class="status-online" style="color: ${kit.themeColor}">ONLINE</span>
+                    <span class="step-counter">${String(state.activeStep + 1).padStart(2, '0')} / ${String(kit.steps.length).padStart(2, '0')}</span>
+                </div>
+            `;
+        }
+
+        function renderMain() {
+            const kit = KITS[state.activeKit];
+            const currentData = kit.steps[state.activeStep];
+            const currentImage = currentData.images && currentData.images.length > 0 ? currentData.images[state.activeImageIndex] : null;
+            const container = document.getElementById('main');
+
+            const hasImage = currentImage ? 'has-image' : '';
+            const progressPercent = ((state.activeStep + 1) / kit.steps.length) * 100;
+
+            let contentHTML = `
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progressPercent}%; background-color: ${currentData.neonColor}; box-shadow: 0 0 20px ${currentData.neonColor}"></div>
+                </div>
+                <div class="step-nav">
+            `;
+
+            kit.steps.forEach((s, idx) => {
+                const isActive = idx === state.activeStep;
+                contentHTML += `
+                    <button class="step-dot ${isActive ? 'active' : ''}" onclick="goToStep(${idx})" style="${isActive ? `background-color: ${currentData.neonColor}; box-shadow: 0 0 12px ${currentData.neonColor}60` : ''}">
+                        ${idx + 1}
+                    </button>
+                `;
+            });
+
+            contentHTML += `
+                </div>
+                <div class="cyber-border" style="${currentData.neonColor ? `--neon-color: ${currentData.neonColor}` : ''}">
+                    <div class="content-grid ${hasImage}">
+            `;
+
+            if (currentImage) {
+                contentHTML += `
+                    <div class="image-section">
+                        <div class="image-container">
+                            <div class="image-blur" style="background-color: ${currentData.neonColor}"></div>
+                            <div class="image-display">
+                                <div class="image-overlay" style="background-color: ${currentData.neonColor}"></div>
+                                <img src="${currentImage.src}" alt="${currentImage.alt}" />
+                                ${currentData.images.length > 1 ? `
+                                    <div class="image-tabs">
+                                        ${currentData.images.map((_, idx) => `
+                                            <button class="image-tab-btn ${state.activeImageIndex === idx ? 'active' : ''}" onclick="changeImage(${idx})">
+                                                ${String.fromCharCode(65 + idx)}
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            contentHTML += `
+                    <div class="text-section">
+                        <div class="section-header">
+                            <div class="icon-box" style="color: ${currentData.neonColor}">
+                                ${createSVGIcon(currentData.icon).outerHTML}
+                            </div>
+                            <span class="section-label" style="color: ${currentData.neonColor}">// 執行協議</span>
+                        </div>
+                        <h2>${currentData.title}</h2>
+                        <p class="description" style="border-color: ${currentData.neonColor}">${currentData.desc}</p>
+                        <div class="tasks-box">
+                            <h3 class="tasks-header">
+                                <span class="tasks-dot" style="background-color: ${currentData.neonColor}"></span>
+                                操作任務清單
+                            </h3>
+                            <ul class="tasks-list">
+                                ${currentData.tasks.map(task => `
+                                    <li class="task-item">
+                                        <svg class="task-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${currentData.neonColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"/><path d="m9 12 2 2 4-4"/>
+                                        </svg>
+                                        <span class="task-text">${task}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ${currentData.tip ? `
+                            <div class="tip-box">
+                                <div class="tip-header">
+                                    <svg class="tip-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+                                    </svg>
+                                    <span>PRO_TIP / 小秘訣</span>
+                                </div>
+                                <p class="tip-text">${currentData.tip}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    </div>
+                </div>
+                <div class="nav-buttons-container">
+                    <button class="prev-btn" ${state.activeStep === 0 ? 'disabled' : ''} onclick="prevStep()">
+                        <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                        上一步
+                    </button>
+                    <button class="next-btn" ${state.activeStep === kit.steps.length - 1 ? 'disabled' : ''} onclick="nextStep()" style="background-color: ${state.activeStep === kit.steps.length - 1 ? '#333' : currentData.neonColor}; box-shadow: ${state.activeStep === kit.steps.length - 1 ? 'none' : `0 0 25px ${currentData.neonColor}60`}">
+                        下一步
+                        <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+
+            container.innerHTML = contentHTML;
+            const bgOverlay = document.getElementById('bgOverlay');
+            bgOverlay.style.background = currentData.bgImage;
+        }
+
+        function renderInfoCards() {
+            const kit = KITS[state.activeKit];
+            const container = document.getElementById('infoCards');
+
+            container.innerHTML = `
+                <div class="info-card storage">
+                    <h4>
+                        ${createSVGIcon('Package', 'info-card-icon', 20).outerHTML}
+                        儲存與保存期限
+                    </h4>
+                    <p>${kit.storage}</p>
+                </div>
+                <div class="info-card warnings">
+                    <h4>
+                        ${createSVGIcon('ShieldAlert', 'info-card-icon', 20).outerHTML}
+                        警告與免責聲明
+                    </h4>
+                    <ul class="warnings-list">
+                        ${kit.warnings.map(w => `
+                            <li class="warning-item">
+                                <svg class="warning-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>
+                                </svg>
+                                <span>${w}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        function renderFooter() {
+            const container = document.getElementById('footer');
+            container.innerHTML = `
+                <div>純度檢測試劑 操作教學指南 — 僅供研究與減害用途</div>
+                <div>Protocol AES-256 Enabled</div>
+            `;
+        }
+
+        // Event handlers
+        function changeKit(kitId) {
+            state.activeKit = kitId;
+            state.activeStep = 0;
+            state.activeImageIndex = 0;
+            render();
+        }
+
+        function nextStep() {
+            const kit = KITS[state.activeKit];
+            if (state.activeStep < kit.steps.length - 1) {
+                state.activeStep++;
+                state.activeImageIndex = 0;
+                render();
+            }
+        }
+
+        function prevStep() {
+            if (state.activeStep > 0) {
+                state.activeStep--;
+                state.activeImageIndex = 0;
+                render();
+            }
+        }
+
+        function goToStep(idx) {
+            state.activeStep = idx;
+            state.activeImageIndex = 0;
+            render();
+        }
+
+        function changeImage(idx) {
+            state.activeImageIndex = idx;
+            renderMain();
+        }
+
+        function render() {
+            renderNavButtons();
+            renderHeader();
+            renderMain();
+            renderInfoCards();
+            renderFooter();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', render);
+        render();
     </script>
 </body>
 </html>
