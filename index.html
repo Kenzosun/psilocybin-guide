@@ -175,7 +175,14 @@
         }
 
         .header-title {
-            font-size: 24px;
+            font-size: 18px;
+            overflow: hidden;
+        }
+
+        @media (min-width: 480px) {
+            .header-title {
+                font-size: 22px;
+            }
         }
 
         @media (min-width: 768px) {
@@ -189,6 +196,10 @@
             text-transform: uppercase;
             margin: 0;
             text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: clamp(16px, 5vw, 32px);
         }
 
         .header-title .glitch-text:hover {
@@ -851,7 +862,7 @@
                 id: "psilocybin",
                 name: "Psilocybin 裸蓋菇鹼",
                 subtitle: "蘑菇純度檢測",
-                terminalName: "Psilocybin_Terminal",
+                terminalName: "Psilocybin_Test",
                 protocolVersion: "v2.8",
                 themeColor: "#a855f7",
                 twColor: "text-purple-400",
@@ -1036,7 +1047,7 @@
                 id: "lsd",
                 name: "LSD 麥角酸二乙醯胺",
                 subtitle: "LSD 純度檢測",
-                terminalName: "LSD_Terminal",
+                terminalName: "LSD_Test",
                 protocolVersion: "v3.1",
                 themeColor: "#06b6d4",
                 twColor: "text-cyan-400",
@@ -1177,7 +1188,7 @@
                 id: "mdma",
                 name: "MDMA 亞甲二氧甲基安非他命",
                 subtitle: "MDMA 純度檢測",
-                terminalName: "MDMA_Terminal",
+                terminalName: "MDMA_Test",
                 protocolVersion: "v4.2",
                 themeColor: "#ec4899",
                 twColor: "text-pink-400",
